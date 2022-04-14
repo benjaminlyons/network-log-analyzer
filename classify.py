@@ -1,4 +1,8 @@
 import sklearn.linear_model 
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 import sklearn.tree
 import pandas as pd
 import numpy as np
@@ -34,7 +38,7 @@ def main():
 
     predictions = logisticRegr.predict(val_x)
     accuracy = logisticRegr.score(val_x, val_y)
-    print(accuracy)
+    print("Logistic Regression:", accuracy)
 
     dtc = sklearn.tree.DecisionTreeClassifier(max_depth=3)
     dtc.fit(train_x, train_y)
@@ -43,7 +47,30 @@ def main():
     print(rules)
     predictions = dtc.predict(val_x)
     accuracy = dtc.score(val_x, val_y)
-    print(accuracy)
+    print("Decision Tree:", accuracy)
+
+
+    svm = SVC()
+    svm.fit(train_x, train_y)
+    predictions = svm.predict(val_x)
+    acc = svm.score(val_x, val_y)
+    print("SVM:", acc)
+
+    gnb = GaussianNB()
+    gnb.fit(train_x, train_y)
+    acc = gnb.score(val_x, val_y)
+    print("Naive Bayes:", acc)
+
+    neigh = KNeighborsClassifier(n_neighbors=10)
+    neigh.fit(train_x, train_y)
+    acc = neigh.score(val_x, val_y)
+    print("KNN:", acc)
+
+
+    lda = LinearDiscriminantAnalysis()
+    lda.fit(train_x, train_y)
+    acc = lda.score(val_x, val_y)
+    print("LDA:", acc)
 
 
 if __name__ == "__main__":
