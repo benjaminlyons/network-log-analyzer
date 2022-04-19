@@ -4,6 +4,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.linear_model import Perceptron
+from sklearn.ensemble import RandomForestClassifier
 import sklearn.tree
 import pandas as pd
 import numpy as np
@@ -66,7 +67,7 @@ def get_list_increasing_importance(model, new_model_call, stats, train_x, train_
                 max_acc = acc
                 max_col_name = stats[i]
                 max_f1 = f1
-        #print("----------------")
+        print("----------------")
         if len(stats) == 1:
             ret.append({stats[0]: (-1, -1)})
             break
@@ -124,40 +125,35 @@ def main():
         for k in e:
             print(k, 'f1:', e[k][0], 'acc:', e[k][1])
 
-    exit()
 
 
-    dtc = sklearn.tree.DecisionTreeClassifier(max_depth=3)
-    dtc.fit(train_x, train_y)
-
-    rules = sklearn.tree.export_text(dtc, feature_names = stats)
-    print(rules)
-    predictions = dtc.predict(val_x)
-    accuracy = dtc.score(val_x, val_y)
-    print("Decision Tree:", accuracy)
-
+    dtc = sklearn.tree.DecisionTreeClassifier()
+    l = get_list_increasing_importance(dtc, 'sklearn.tree.DecisionTreeClassifier()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------DecisionTreeClassifier--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
 
     svm = SVC()
-    svm.fit(train_x, train_y)
-    predictions = svm.predict(val_x)
-    acc = svm.score(val_x, val_y)
-    print("SVM:", acc)
+    l = get_list_increasing_importance(svm, 'SVC()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------SVC--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
 
-    gnb = GaussianNB()
-    gnb.fit(train_x, train_y)
-    acc = gnb.score(val_x, val_y)
-    print("Naive Bayes:", acc)
+    lgr = sklearn.linear_model.LogisticRegression()
+    l = get_list_increasing_importance(lgr, 'sklearn.linear_model.LogisticRegression(max_iter=1000)', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------LogisticRegression--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
 
-    neigh = KNeighborsClassifier(n_neighbors=10)
-    neigh.fit(train_x, train_y)
-    acc = neigh.score(val_x, val_y)
-    print("KNN:", acc)
-
-
-    lda = LinearDiscriminantAnalysis()
-    lda.fit(train_x, train_y)
-    acc = lda.score(val_x, val_y)
-    print("LDA:", acc)
+    gpc = RandomForestClassifier()
+    l = get_list_increasing_importance(gpc, 'RandomForestClassifier()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------RandomForestClassifier--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
 
 
 if __name__ == "__main__":
