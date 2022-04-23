@@ -83,7 +83,53 @@ def get_list_increasing_importance(model, new_model_call, stats, train_x, train_
             dropped += 1
     return ret
 
-
+def get_list_decreasing_importance(model, new_model_call, stats, train_x, train_y, val_x, val_y):
+    #print(stats, "haha")
+    ret = []
+    dropped = 0
+    model = eval(new_model_call)
+    model.fit(train_x, train_y)
+    pred_y = model.predict(val_x)
+    f1 = f1_score(val_y, pred_y)
+    acc = model.score(val_x, val_y)
+    ret.append({'no_drop': (f1, acc)})
+    #print(stats, "haha", ret)
+    while True:
+        #print(ret)
+        #print(np.shape(train_x))
+        min_acc = 1.1
+        min_col_name = ''
+        min_f1 = 2
+        for i in range(0, len(stats)):
+            if len(stats) == 1:
+                break
+            temp_train_x = np.delete(train_x, i, 1)
+            temp_val_x = np.delete(val_x, i, 1)
+            model = eval(new_model_call)
+            model.fit(temp_train_x, train_y)
+            pred_y = model.predict(temp_val_x)
+            f1 = f1_score(val_y, pred_y)
+            acc = model.score(temp_val_x, val_y)
+            print(dropped, i, f1, acc, stats[i], len(stats), len(temp_train_x[0]))
+            if acc < min_acc:
+                min_acc = acc
+                min_col_name = stats[i]
+                min_f1 = f1
+        print("----------------")
+        if len(stats) == 1:
+            ret.append({stats[0]: (-1, -1)})
+            break
+        # elif min_acc > 0.5:
+        #     ret.append({min_col_name: (min_f1, min_acc)})
+        #     break
+        else:
+            ret.append({min_col_name: (min_f1, min_acc)})
+            rm_ind = stats.index(min_col_name)
+            stats.pop(rm_ind)
+            train_x = np.delete(train_x, rm_ind, 1)
+            val_x = np.delete(val_x, rm_ind, 1)
+            dropped += 1
+    return ret
 
 def main():
     file_loc = "data/supervised_dataset.csv"
@@ -155,6 +201,73 @@ def main():
         for k in e:
             print(k, 'f1:', e[k][0], 'acc:', e[k][1])
 
+    print("GETTING LIST OF DRECREASING IMPORTANCE")
+    print("---------------------------------------------")
+    print("---------------------------------------------")
+    print("---------------------------------------------")
+
+
+    gnb = GaussianNB()
+
+    l = get_list_decreasing_importance(gnb, 'GaussianNB()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('---Gaussian NB---')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
+
+    knn = KNeighborsClassifier(n_neighbors=5)
+
+    l = get_list_decreasing_importance(knn, 'KNeighborsClassifier(n_neighbors=10)', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('---K nearest neighbors---')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
+
+    lda = LinearDiscriminantAnalysis()
+
+    l = get_list_decreasing_importance(lda, 'LinearDiscriminantAnalysis()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('---Linear Discriminant Analysis---')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
+
+    pct = Perceptron()
+
+    l = get_list_decreasing_importance(pct, 'Perceptron()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('---Perceptron---')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
+
+
+
+    dtc = sklearn.tree.DecisionTreeClassifier()
+    l = get_list_decreasing_importance(dtc, 'sklearn.tree.DecisionTreeClassifier()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------DecisionTreeClassifier--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
+
+    svm = SVC()
+    l = get_list_decreasing_importance(svm, 'SVC()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------SVC--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
+
+    lgr = sklearn.linear_model.LogisticRegression()
+    l = get_list_decreasing_importance(lgr, 'sklearn.linear_model.LogisticRegression(max_iter=1000)', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------LogisticRegression--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
+
+    gpc = RandomForestClassifier()
+    l = get_list_decreasing_importance(gpc, 'RandomForestClassifier()', copy.deepcopy(stats), copy.deepcopy(train_x), copy.deepcopy(train_y), copy.deepcopy(val_x), copy.deepcopy(val_y))
+    print('-----------------RandomForestClassifier--------------')
+    for e in l:
+        for k in e:
+            print(k, 'f1:', e[k][0], 'acc:', e[k][1])
 
 if __name__ == "__main__":
     main()
